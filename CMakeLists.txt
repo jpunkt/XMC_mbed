@@ -1,0 +1,474 @@
+cmake_minimum_required(VERSION 3.8)
+project(XMC_mbed C CXX ASM)
+
+#====================================================================================
+
+set(CMAKE_CXX_COMPILER /opt/gcc-arm-none-eabi-7-2017-q4-major/bin/arm-none-eabi-g++)
+set(CMAKE_C_COMPILER /opt/gcc-arm-none-eabi-7-2017-q4-major/bin/arm-none-eabi-gcc)
+set(CMAKE_OBJCOPY /opt/gcc-arm-none-eabi-7-2017-q4-major/bin/arm-none-eabi-objcopy)
+set(CMAKE_ASM_COMPILER /opt/gcc-arm-none-eabi-7-2017-q4-major/bin/arm-none-eabi-gcc)
+#set(CMAKE_CXX_LINK_EXECUTABLE "/opt/gcc-arm-none-eabi-7-2017-q4-major/bin/arm-none-eabi-ld")
+
+add_definitions(-DXMC4500_F100x1024
+        -DTARGET_XMC4500_RELAXKIT
+        -D_CMSIS_RTOS
+        -DCORTEX_M4
+        -D__CORTEX_M4
+        -DMBED_CMSIS_RTOS_CM
+        -DARM_MATH_CM4
+        -DMBED_CONF_PLATFORM_DEFAULT_SERIAL_BAUD_RATE=115200
+        -DTOOLCHAIN_GCC
+        -DTOOLCHAIN_GCC_ARM
+        -DMBED_CONF_RTOS_PRESENT
+        -D_FPU_PRESENT=1 )
+
+set(GXX_COMPILE_FLAGS "-Os -ffunction-sections -fdata-sections -Wall -mfloat-abi=softfp -Wa,-adhlns=\"$@.lst\" -fno-exceptions -fno-rtti -pipe -fmessage-length=0 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mthumb")
+set(GCC_COMPILE_FLAGS "-Os -ffunction-sections -fdata-sections -Wall -mfloat-abi=softfp -Wa,-adhlns=\"$@.lst\" -fno-exceptions -pipe -fmessage-length=0 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mthumb")
+set(ASM_COMPILE_FLAGS "-Os -ffunction-sections -fdata-sections -Wall -mfloat-abi=softfp -Wa,-adhlns=\"$@.lst\" -fno-exceptions -pipe -fmessage-length=0 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mthumb")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GXX_COMPILE_FLAGS}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_COMPILE_FLAGS}")
+set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${ASM_COMPILE_FLAGS}")
+
+set(GCC_EXE_LINKER_FLAGS "-nostartfiles -Xlinker --gc-sections -specs=nano.specs -specs=nosys.specs -u _printf_float -u _scanf_float -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -mcpu=cortex-m4 -mthumb")
+
+#set(CMAKE_CXX_STANDARD 11)
+
+include_directories("${PROJECT_SOURCE_DIR}/Libs")
+include_directories("${PROJECT_SOURCE_DIR}/mbed-os")
+include_directories("${PROJECT_SOURCE_DIR}/mbed-os/cmsis/TARGET_CORTEX_M")
+include_directories("${PROJECT_SOURCE_DIR}/mbed-os/drivers")
+include_directories("${PROJECT_SOURCE_DIR}/mbed-os/hal")
+include_directories("${PROJECT_SOURCE_DIR}/mbed-os/platform")
+include_directories("${PROJECT_SOURCE_DIR}/mbed-os/rtos")
+include_directories("${PROJECT_SOURCE_DIR}/mbed-os/rtos/TARGET_CORTEX")
+include_directories("${PROJECT_SOURCE_DIR}/mbed-os/rtos/TARGET_CORTEX/rtx4")
+include_directories("${PROJECT_SOURCE_DIR}/mbed-os/rtos/TARGET_CORTEX/rtx5")
+include_directories("${PROJECT_SOURCE_DIR}/mbed-os/rtos/TARGET_CORTEX/rtx5/Include")
+include_directories("${PROJECT_SOURCE_DIR}/mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Config")
+include_directories("${PROJECT_SOURCE_DIR}/mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Include")
+include_directories("${PROJECT_SOURCE_DIR}/mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source")
+include_directories("${PROJECT_SOURCE_DIR}/mbed-os/targets/TARGET_INFINEON")
+include_directories("${PROJECT_SOURCE_DIR}/mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000")
+include_directories("${PROJECT_SOURCE_DIR}/mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/device")
+include_directories("${PROJECT_SOURCE_DIR}/mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/TARGET_XMC4500_RELAXKIT")
+include_directories("${PROJECT_SOURCE_DIR}/mbed-os/targets/TARGET_INFINEON/USB")
+include_directories("${PROJECT_SOURCE_DIR}/mbed-os/targets/TARGET_INFINEON/XMCLib/inc")
+
+
+set(SOURCE_FILES
+        mbed-os/mbed.h
+        Libs/MPU9250.cpp
+        Libs/MPU9250.h
+        Libs/TextLCD.cpp
+        Libs/TextLCD.h
+        mbed-os/cmsis/TARGET_CORTEX_M/arm_math.h
+        mbed-os/cmsis/TARGET_CORTEX_M/cmsis_armcc.h
+        mbed-os/cmsis/TARGET_CORTEX_M/cmsis_armclang.h
+        mbed-os/cmsis/TARGET_CORTEX_M/cmsis_compiler.h
+        mbed-os/cmsis/TARGET_CORTEX_M/cmsis_gcc.h
+        mbed-os/cmsis/TARGET_CORTEX_M/cmsis_iccarm.h
+        mbed-os/cmsis/TARGET_CORTEX_M/cmsis_version.h
+        mbed-os/cmsis/TARGET_CORTEX_M/core_armv8mbl.h
+        mbed-os/cmsis/TARGET_CORTEX_M/core_armv8mml.h
+        mbed-os/cmsis/TARGET_CORTEX_M/core_cm0.h
+        mbed-os/cmsis/TARGET_CORTEX_M/core_cm0plus.h
+        mbed-os/cmsis/TARGET_CORTEX_M/core_cm23.h
+        mbed-os/cmsis/TARGET_CORTEX_M/core_cm3.h
+        mbed-os/cmsis/TARGET_CORTEX_M/core_cm33.h
+        mbed-os/cmsis/TARGET_CORTEX_M/core_cm4.h
+        mbed-os/cmsis/TARGET_CORTEX_M/core_cm7.h
+        mbed-os/cmsis/TARGET_CORTEX_M/core_cmSecureAccess.h
+        mbed-os/cmsis/TARGET_CORTEX_M/core_sc000.h
+        mbed-os/cmsis/TARGET_CORTEX_M/core_sc300.h
+        mbed-os/cmsis/TARGET_CORTEX_M/mpu_armv7.h
+        mbed-os/cmsis/TARGET_CORTEX_M/mpu_armv8.h
+        mbed-os/cmsis/TARGET_CORTEX_M/tz_context.h
+        mbed-os/drivers/AnalogIn.cpp
+        mbed-os/drivers/AnalogIn.h
+        mbed-os/drivers/AnalogOut.h
+        mbed-os/drivers/BusIn.cpp
+        mbed-os/drivers/BusIn.h
+        mbed-os/drivers/BusInOut.cpp
+        mbed-os/drivers/BusInOut.h
+        mbed-os/drivers/BusOut.cpp
+        mbed-os/drivers/BusOut.h
+        mbed-os/drivers/CAN.cpp
+        mbed-os/drivers/CAN.h
+        mbed-os/drivers/DigitalIn.h
+        mbed-os/drivers/DigitalInOut.h
+        mbed-os/drivers/DigitalOut.h
+        mbed-os/drivers/Ethernet.cpp
+        mbed-os/drivers/Ethernet.h
+        mbed-os/drivers/FlashIAP.cpp
+        mbed-os/drivers/FlashIAP.h
+        mbed-os/drivers/I2C.cpp
+        mbed-os/drivers/I2C.h
+        mbed-os/drivers/I2CSlave.cpp
+        mbed-os/drivers/I2CSlave.h
+        mbed-os/drivers/InterruptIn.cpp
+        mbed-os/drivers/InterruptIn.h
+        mbed-os/drivers/InterruptManager.cpp
+        mbed-os/drivers/InterruptManager.h
+        mbed-os/drivers/LowPowerTicker.h
+        mbed-os/drivers/LowPowerTimeout.h
+        mbed-os/drivers/LowPowerTimer.h
+        mbed-os/drivers/PortIn.h
+        mbed-os/drivers/PortInOut.h
+        mbed-os/drivers/PortOut.h
+        mbed-os/drivers/PwmOut.h
+        mbed-os/drivers/RawSerial.cpp
+        mbed-os/drivers/RawSerial.h
+        mbed-os/drivers/Serial.cpp
+        mbed-os/drivers/Serial.h
+        mbed-os/drivers/SerialBase.cpp
+        mbed-os/drivers/SerialBase.h
+        mbed-os/drivers/SPI.cpp
+        mbed-os/drivers/SPI.h
+        mbed-os/drivers/SPISlave.cpp
+        mbed-os/drivers/SPISlave.h
+        mbed-os/drivers/Ticker.cpp
+        mbed-os/drivers/Ticker.h
+        mbed-os/drivers/Timeout.cpp
+        mbed-os/drivers/Timeout.h
+        mbed-os/drivers/Timer.cpp
+        mbed-os/drivers/Timer.h
+        mbed-os/drivers/TimerEvent.cpp
+        mbed-os/drivers/TimerEvent.h
+        mbed-os/drivers/UARTSerial.cpp
+        mbed-os/drivers/UARTSerial.h
+        mbed-os/hal/analogin_api.h
+        mbed-os/hal/analogout_api.h
+        mbed-os/hal/buffer.h
+        mbed-os/hal/can_api.h
+        mbed-os/hal/can_helper.h
+        mbed-os/hal/critical_section_api.h
+        mbed-os/hal/dma_api.h
+        mbed-os/hal/emac_api.h
+        mbed-os/hal/ethernet_api.h
+        mbed-os/hal/flash_api.h
+        mbed-os/hal/gpio_api.h
+        mbed-os/hal/gpio_irq_api.h
+        mbed-os/hal/i2c_api.h
+        mbed-os/hal/lp_ticker_api.h
+        mbed-os/hal/mbed_critical_section_api.c
+        mbed-os/hal/mbed_flash_api.c
+        mbed-os/hal/mbed_gpio.c
+        mbed-os/hal/mbed_lp_ticker_api.c
+        mbed-os/hal/mbed_pinmap_common.c
+        mbed-os/hal/mbed_sleep_manager.c
+        mbed-os/hal/mbed_ticker_api.c
+        mbed-os/hal/mbed_us_ticker_api.c
+        mbed-os/hal/pinmap.h
+        mbed-os/hal/port_api.h
+        mbed-os/hal/pwmout_api.h
+        mbed-os/hal/rtc_api.h
+        mbed-os/hal/serial_api.h
+        mbed-os/hal/sleep_api.h
+        mbed-os/hal/spi_api.h
+        mbed-os/hal/ticker_api.h
+        mbed-os/hal/trng_api.h
+        mbed-os/hal/us_ticker_api.h
+        mbed-os/platform/ATCmdParser.cpp
+        mbed-os/platform/ATCmdParser.h
+        mbed-os/platform/Callback.h
+        mbed-os/platform/CallChain.cpp
+        mbed-os/platform/CallChain.h
+        mbed-os/platform/CircularBuffer.h
+        mbed-os/platform/critical.h
+        mbed-os/platform/CriticalSectionLock.h
+        mbed-os/platform/CThunk.h
+        mbed-os/platform/DeepSleepLock.h
+        mbed-os/platform/DirHandle.h
+        mbed-os/platform/FileBase.cpp
+        mbed-os/platform/FileBase.h
+        mbed-os/platform/FileHandle.cpp
+        mbed-os/platform/FileHandle.h
+        mbed-os/platform/FileLike.h
+        mbed-os/platform/FilePath.cpp
+        mbed-os/platform/FilePath.h
+        mbed-os/platform/FileSystemHandle.cpp
+        mbed-os/platform/FileSystemHandle.h
+        mbed-os/platform/FileSystemLike.h
+        mbed-os/platform/FunctionPointer.h
+        mbed-os/platform/LocalFileSystem.cpp
+        mbed-os/platform/LocalFileSystem.h
+        mbed-os/platform/mbed_alloc_wrappers.cpp
+        mbed-os/platform/mbed_application.c
+        mbed-os/platform/mbed_application.h
+        mbed-os/platform/mbed_assert.c
+        mbed-os/platform/mbed_assert.h
+        mbed-os/platform/mbed_board.c
+        mbed-os/platform/mbed_critical.c
+        mbed-os/platform/mbed_critical.h
+        mbed-os/platform/mbed_debug.h
+        mbed-os/platform/mbed_error.c
+        mbed-os/platform/mbed_error.h
+        mbed-os/platform/mbed_interface.c
+        mbed-os/platform/mbed_interface.h
+        mbed-os/platform/mbed_mem_trace.cpp
+        mbed-os/platform/mbed_mem_trace.h
+        mbed-os/platform/mbed_mktime.c
+        mbed-os/platform/mbed_mktime.h
+        mbed-os/platform/mbed_poll.cpp
+        mbed-os/platform/mbed_poll.h
+        mbed-os/platform/mbed_preprocessor.h
+        mbed-os/platform/mbed_retarget.cpp
+        mbed-os/platform/mbed_retarget.h
+        mbed-os/platform/mbed_rtc_time.cpp
+        mbed-os/platform/mbed_rtc_time.h
+        mbed-os/platform/mbed_sdk_boot.c
+        mbed-os/platform/mbed_semihost_api.c
+        mbed-os/platform/mbed_semihost_api.h
+        mbed-os/platform/mbed_sleep.h
+        mbed-os/platform/mbed_stats.c
+        mbed-os/platform/mbed_stats.h
+        mbed-os/platform/mbed_toolchain.h
+        mbed-os/platform/mbed_wait_api.h
+        mbed-os/platform/mbed_wait_api_no_rtos.c
+        mbed-os/platform/mbed_wait_api_rtos.cpp
+        mbed-os/platform/NonCopyable.h
+        mbed-os/platform/platform.h
+        mbed-os/platform/PlatformMutex.h
+        mbed-os/platform/rtc_time.h
+        mbed-os/platform/semihost_api.h
+        mbed-os/platform/SingletonPtr.h
+        mbed-os/platform/sleep.h
+        mbed-os/platform/Stream.cpp
+        mbed-os/platform/Stream.h
+        mbed-os/platform/toolchain.h
+        mbed-os/platform/Transaction.h
+        mbed-os/platform/wait_api.h
+        mbed-os/rtos/TARGET_CORTEX/rtx4/cmsis_os.h
+        mbed-os/rtos/TARGET_CORTEX/rtx4/cmsis_os1.c
+        mbed-os/rtos/TARGET_CORTEX/rtx5/Include/cmsis_os2.h
+        mbed-os/rtos/TARGET_CORTEX/rtx5/Include/os_tick.h
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Config/RTX_Config.c
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Config/RTX_Config.h
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Include/rtx_evr.h
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Include/rtx_os.h
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/rt_OsEventObserver.c
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/rt_OsEventObserver.h
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/rtx_core_c.h
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/rtx_core_ca.h
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/rtx_core_cm.h
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/rtx_delay.c
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/rtx_evflags.c
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/rtx_evr.c
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/rtx_kernel.c
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/rtx_lib.c
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/rtx_lib.h
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/rtx_memory.c
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/rtx_mempool.c
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/rtx_msgqueue.c
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/rtx_mutex.c
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/rtx_semaphore.c
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/rtx_system.c
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/rtx_thread.c
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/rtx_timer.c
+        mbed-os/rtos/TARGET_CORTEX/rtx5/RTX/Source/TOOLCHAIN_GCC/TARGET_RTOS_M4_M7/irq_cm4f.S
+        mbed-os/rtos/TARGET_CORTEX/rtx5/Source/os_systick.c
+        mbed-os/rtos/TARGET_CORTEX/rtx5/Source/os_tick_ptim.c
+        mbed-os/rtos/TARGET_CORTEX/mbed_boot.c
+        mbed-os/rtos/TARGET_CORTEX/mbed_rtos1_types.h
+        mbed-os/rtos/TARGET_CORTEX/mbed_rtos_storage.h
+        mbed-os/rtos/TARGET_CORTEX/mbed_rtx_conf.h
+        mbed-os/rtos/TARGET_CORTEX/mbed_rtx_handlers.c
+        mbed-os/rtos/TARGET_CORTEX/mbed_rtx_idle.cpp
+        mbed-os/rtos/ConditionVariable.cpp
+        mbed-os/rtos/ConditionVariable.h
+        mbed-os/rtos/EventFlags.cpp
+        mbed-os/rtos/EventFlags.h
+        mbed-os/rtos/Mail.h
+        mbed-os/rtos/MemoryPool.h
+        mbed-os/rtos/Mutex.cpp
+        mbed-os/rtos/Mutex.h
+        mbed-os/rtos/Queue.h
+        mbed-os/rtos/rtos.h
+        mbed-os/rtos/rtos_idle.h
+        mbed-os/rtos/RtosTimer.cpp
+        mbed-os/rtos/RtosTimer.h
+        mbed-os/rtos/Semaphore.cpp
+        mbed-os/rtos/Semaphore.h
+        mbed-os/rtos/Thread.cpp
+        mbed-os/rtos/Thread.h
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/device/TOOLCHAIN_GCC_ARM/syscalls.c
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/device/TOOLCHAIN_GCC_ARM/startup_XMC4500.S
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/device/cmsis.h
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/device/cmsis_nvic.h
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/device/system_XMC4500.c
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/device/system_XMC4500.h
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/device/XMC4500.h
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/TARGET_XMC4500_RELAXKIT/PeripheralNames.h
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/TARGET_XMC4500_RELAXKIT/PeripheralPins.c
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/TARGET_XMC4500_RELAXKIT/PinNames.h
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/TARGET_XMC4500_RELAXKIT/PortNames.h
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/analogin_api.c
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/analogout_api.c
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/device.h
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/gpio_irq_device.c
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/gpio_irq_device.h
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/i2c_api.c
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/objects.h
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/pwmout_api.c
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/rtc_api.c
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/serial_api.c
+        mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/system.c
+        mbed-os/targets/TARGET_INFINEON/USB/Class/Common/CDCClassCommon.h
+        mbed-os/targets/TARGET_INFINEON/USB/Class/Common/HIDClassCommon.h
+        mbed-os/targets/TARGET_INFINEON/USB/Class/Common/HIDParser.c
+        mbed-os/targets/TARGET_INFINEON/USB/Class/Common/HIDParser.h
+        mbed-os/targets/TARGET_INFINEON/USB/Class/Common/HIDReportData.h
+        mbed-os/targets/TARGET_INFINEON/USB/Class/Common/MassStorageClassCommon.h
+        mbed-os/targets/TARGET_INFINEON/USB/Class/Device/CDCClassDevice.c
+        mbed-os/targets/TARGET_INFINEON/USB/Class/Device/CDCClassDevice.h
+        mbed-os/targets/TARGET_INFINEON/USB/Class/Device/HIDClassDevice.c
+        mbed-os/targets/TARGET_INFINEON/USB/Class/Device/HIDClassDevice.h
+        mbed-os/targets/TARGET_INFINEON/USB/Class/Device/MassStorageClassDevice.c
+        mbed-os/targets/TARGET_INFINEON/USB/Class/Device/MassStorageClassDevice.h
+        mbed-os/targets/TARGET_INFINEON/USB/Class/CDCClass.h
+        mbed-os/targets/TARGET_INFINEON/USB/Class/HIDClass.h
+        mbed-os/targets/TARGET_INFINEON/USB/Class/MassStorageClass.h
+        mbed-os/targets/TARGET_INFINEON/USB/Common/Architectures.h
+        mbed-os/targets/TARGET_INFINEON/USB/Common/ArchitectureSpecific.h
+        mbed-os/targets/TARGET_INFINEON/USB/Common/Attributes.h
+        mbed-os/targets/TARGET_INFINEON/USB/Common/BoardTypes.h
+        mbed-os/targets/TARGET_INFINEON/USB/Common/Common.h
+        mbed-os/targets/TARGET_INFINEON/USB/Common/CompilerSpecific.h
+        mbed-os/targets/TARGET_INFINEON/USB/Common/Endianness.h
+        mbed-os/targets/TARGET_INFINEON/USB/Common/memcpy.c
+        mbed-os/targets/TARGET_INFINEON/USB/Core/XMC4000/Device_XMC4000.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/XMC4000/Endpoint_XMC4000.c
+        mbed-os/targets/TARGET_INFINEON/USB/Core/XMC4000/Endpoint_XMC4000.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/XMC4000/EndpointStream_XMC4000.c
+        mbed-os/targets/TARGET_INFINEON/USB/Core/XMC4000/EndpointStream_XMC4000.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/XMC4000/USBController_XMC4000.c
+        mbed-os/targets/TARGET_INFINEON/USB/Core/XMC4000/USBController_XMC4000.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/ConfigDescriptors.c
+        mbed-os/targets/TARGET_INFINEON/USB/Core/ConfigDescriptors.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/Device.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/DeviceStandardReq.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/EndPoint.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/EndpointStream.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/Events.c
+        mbed-os/targets/TARGET_INFINEON/USB/Core/Events.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/Host.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/HostStandardReq.c
+        mbed-os/targets/TARGET_INFINEON/USB/Core/HostStandardReq.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/OTG.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/Pipe.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/PipeStream.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/StdDescriptors.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/StdRequestType.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/USBController.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/USBInterrupt.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/USBMode.h
+        mbed-os/targets/TARGET_INFINEON/USB/Core/USBTask.c
+        mbed-os/targets/TARGET_INFINEON/USB/Core/USBTask.h
+        mbed-os/targets/TARGET_INFINEON/USB/Descriptors.c
+        mbed-os/targets/TARGET_INFINEON/USB/Descriptors.h
+        mbed-os/targets/TARGET_INFINEON/USB/USB.h
+        mbed-os/targets/TARGET_INFINEON/USB/VirtualSerial.c
+        mbed-os/targets/TARGET_INFINEON/USB/VirtualSerial.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc4_ccu4_map.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc4_ccu8_map.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc4_eru_map.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc4_flash.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc4_gpio.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc4_gpio_map.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc4_rtc.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc4_scu.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc4_usic_map.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_can.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_can_map.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_ccu4.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_ccu8.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_common.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_dac.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_device.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_dma.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_dma_map.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_dsd.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_ebu.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_ecat.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_ecat_map.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_eru.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_eth_mac.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_eth_mac_map.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_eth_phy.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_fce.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_flash.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_gpio.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_hrpwm.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_hrpwm_map.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_i2c.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_i2s.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_ledts.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_posif.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_posif_map.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_rtc.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_scu.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_sdmmc.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_spi.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_uart.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_usbd.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_usbd_regs.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_usbh.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_usic.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_vadc.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_vadc_map.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/inc/xmc_wdt.h
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc4_eru.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc4_flash.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc4_gpio.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc4_rtc.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc4_scu.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_can.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_ccu4.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_ccu8.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_common.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_dac.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_dma.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_dsd.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_ebu.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_ecat.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_eru.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_eth_mac.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_eth_phy_dp83848.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_eth_phy_ksz8031rnl.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_eth_phy_ksz8081rnb.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_fce.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_gpio.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_hrpwm.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_i2c.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_i2s.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_ledts.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_posif.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_rtc.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_sdmmc.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_spi.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_uart.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_usbd.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_usbh.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_usic.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_vadc.c
+        mbed-os/targets/TARGET_INFINEON/XMCLib/src/xmc_wdt.c
+        mbed-os/targets/TARGET_INFINEON/gpio_api.c
+        mbed-os/targets/TARGET_INFINEON/gpio_irq_api.c
+        mbed-os/targets/TARGET_INFINEON/gpio_object.h
+        mbed-os/targets/TARGET_INFINEON/mbed_rtx.h
+        mbed-os/targets/TARGET_INFINEON/PeripheralPins.h
+        mbed-os/targets/TARGET_INFINEON/pinmap.c
+        mbed-os/targets/TARGET_INFINEON/PinNamesTypes.h
+        mbed-os/targets/TARGET_INFINEON/port_api.c
+        mbed-os/targets/TARGET_INFINEON/us_ticker.c
+        main.cpp)
+
+add_executable(${PROJECT_NAME}.elf ${SOURCE_FILES})
+
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-gc-sections -z muldefs -T${PROJECT_SOURCE_DIR}/mbed-os/targets/TARGET_INFINEON/TARGET_XMC4000/device/TOOLCHAIN_GCC_ARM/XMC4500x1024.ld")
+set(HEX_FILE ${PROJECT_NAME}.hex)
+
+add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
+        COMMAND ${CMAKE_OBJCOPY} -Oihex $<TARGET_FILE:${PROJECT_NAME}.elf> ${HEX_FILE}
+        COMMENT "Building ${HEX_FILE}")

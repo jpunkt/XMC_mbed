@@ -1,7 +1,7 @@
 #include "mbed.h"
 
 Thread thread;
-DigitalOut led(LED1);
+DigitalOut led(LED2);
 
 void led_thread() {
     while (true) {
