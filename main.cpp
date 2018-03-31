@@ -1,21 +1,17 @@
 #include "mbed.h"
 
-Thread thread;
+InterruptIn button(BUTTON2);
 DigitalOut led(LED2);
+DigitalOut flash(LED1);
 
-void led_thread() {
-    while (true) {
-        // Signal flags that are reported as event are automatically cleared.
-        Thread::signal_wait(0x1);
-        led = !led;
-    }
+void flip() {
+    led = !led;
 }
 
-int main (void) {
-    thread.start(callback(led_thread));
-
-    while (true) {
-        wait(1);
-        thread.signal_set(0x1);
+int main() {
+    button.rise(&flip);  // attach the address of the flip function to the rising edge
+    while(1) {           // wait around, interrupts will interrupt this!
+        flash = !flash;
+        wait(0.25);
     }
 }

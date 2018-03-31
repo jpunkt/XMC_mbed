@@ -3,10 +3,12 @@ project(XMC_mbed C CXX ASM)
 
 #====================================================================================
 
-set(CMAKE_CXX_COMPILER /opt/gcc-arm-none-eabi-7-2017-q4-major/bin/arm-none-eabi-g++)
-set(CMAKE_C_COMPILER /opt/gcc-arm-none-eabi-7-2017-q4-major/bin/arm-none-eabi-gcc)
-set(CMAKE_OBJCOPY /opt/gcc-arm-none-eabi-7-2017-q4-major/bin/arm-none-eabi-objcopy)
-set(CMAKE_ASM_COMPILER /opt/gcc-arm-none-eabi-7-2017-q4-major/bin/arm-none-eabi-gcc)
+set(ARM_GCC_BASE_PATH /opt/gcc-arm-none-eabi-7-2017-q4-major/bin)
+
+set(CMAKE_CXX_COMPILER ${ARM_GCC_BASE_PATH}/arm-none-eabi-g++)
+set(CMAKE_C_COMPILER ${ARM_GCC_BASE_PATH}/arm-none-eabi-gcc)
+set(CMAKE_OBJCOPY ${ARM_GCC_BASE_PATH}/arm-none-eabi-objcopy)
+set(CMAKE_ASM_COMPILER ${ARM_GCC_BASE_PATH}/arm-none-eabi-gcc)
 #set(CMAKE_CXX_LINK_EXECUTABLE "/opt/gcc-arm-none-eabi-7-2017-q4-major/bin/arm-none-eabi-ld")
 
 add_definitions(-DXMC4500_F100x1024
@@ -22,9 +24,11 @@ add_definitions(-DXMC4500_F100x1024
         -DMBED_CONF_RTOS_PRESENT
         -D_FPU_PRESENT=1 )
 
-set(GXX_COMPILE_FLAGS "-Os -ffunction-sections -fdata-sections -Wall -mfloat-abi=softfp -Wa,-adhlns=\"$@.lst\" -fno-exceptions -fno-rtti -pipe -fmessage-length=0 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mthumb")
-set(GCC_COMPILE_FLAGS "-Os -ffunction-sections -fdata-sections -Wall -mfloat-abi=softfp -Wa,-adhlns=\"$@.lst\" -fno-exceptions -pipe -fmessage-length=0 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mthumb")
-set(ASM_COMPILE_FLAGS "-Os -ffunction-sections -fdata-sections -Wall -mfloat-abi=softfp -Wa,-adhlns=\"$@.lst\" -fno-exceptions -pipe -fmessage-length=0 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mthumb")
+set(COMMON_COMPILE_FLAGS "-Os -ffunction-sections -fdata-sections -Wall -mfloat-abi=softfp -Wa,-adhlns=\"$@.lst\" -fno-exceptions -pipe -fmessage-length=0 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mthumb")
+
+set(GXX_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS} -fno-rtti")
+set(GCC_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS}")
+set(ASM_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS}")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GXX_COMPILE_FLAGS}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_COMPILE_FLAGS}")
